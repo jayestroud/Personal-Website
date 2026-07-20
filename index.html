@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics="">
+<meta name="description" content="Jay Stroud personal website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="./image-slot.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&amp;family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@500;600&amp;family=Source+Sans+3:wght@400;500;600&amp;family=Space+Grotesk:wght@400;500;600&amp;family=Lora:wght@500;600&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  body { margin: 0; background: #f6f1e8; }
+  a { color: #b5572e; }
+  a:hover { color: #8f4322; }
+  ::selection { background: #e3c6a8; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#f6f1e8;font-family:{{ bodyFont }};color:#2b2622;">
+
+  <nav style="position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:28px 64px;background:rgba(246,241,232,0.9);backdrop-filter:blur(8px);border-bottom:1px solid #ddd0ba;">
+    <div style="font-family:{{ headingFont }};font-size:18px;font-weight:500;letter-spacing:0.01em;color:#2b2622;">Jay Stroud</div>
+    <div style="display:flex;gap:36px;white-space:nowrap;">
+      <button style="background:none;border:none;padding:2px 0;font-family:{{ bodyFont }};font-size:14px;font-weight:500;cursor:pointer;color:{{ navColor.about }};border-bottom:1px solid {{ navUnderline.about }};" onClick="{{ goAbout }}">About</button>
+      <button style="background:none;border:none;padding:2px 0;font-family:{{ bodyFont }};font-size:14px;font-weight:500;cursor:pointer;color:{{ navColor.gallery }};border-bottom:1px solid {{ navUnderline.gallery }};" onClick="{{ goGallery }}">Gallery</button>
+      <button style="background:none;border:none;padding:2px 0;font-family:{{ bodyFont }};font-size:14px;font-weight:500;cursor:pointer;color:{{ navColor.resources }};border-bottom:1px solid {{ navUnderline.resources }};" onClick="{{ goResources }}">Resources</button>
+    </div>
+  </nav>
+
+  <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ true }}">
+    <main key="about" style="max-width: 1080px; margin: 0 auto; padding: 110px 64px 140px; animation: fadeUp 0.5s ease both; position: relative">
+      <div style="display:grid;grid-template-columns:1fr 0.85fr;gap:80px;align-items:center;">
+        <div>
+          <div style="font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#b5572e;font-weight:600;margin-bottom:20px;">Marietta, Georgia</div>
+          <h1 style="font-family:{{ headingFont }};font-size:64px;font-weight:500;margin:0 0 32px;line-height:1.02;letter-spacing:-0.01em;color:#2b2622;">Jay Stroud</h1>
+          <p style="font-size:18px;line-height:1.8;color:#4a423a;margin:0 0 24px;max-width:44ch;">I'm always chasing the next interesting problem — whether it's on a chart, a racetrack, or under the hood.</p>
+          <p style="font-size:18px;line-height:1.85;color:#4a423a;margin:0 0 24px;max-width:68ch;">I enjoy spending time on technical analysis and trading, but when I'm not staring at charts, I'm usually playing guitar.&nbsp; My favorite getaway is relaxing with my wife at the lake, but most of the time you'll find me working on cars and diesel trucks.&nbsp; Although I don't do it as much as I used to, I still love to race my Spec Miata or spend the weekend at great road course track day — there's nothing quite like it.&nbsp;</p>
+          <p style="font-size:18px;line-height:1.85;color:#4a423a;margin:0;max-width:68ch;">Driven by an entrepreneurial mindset, I explore how AI can be leveraged to streamline business models and build high-impact solutions. I’m equally passionate about the EV sector, actively tracking emerging battery technologies that will disrupt the future of mobility.</p>
+        </div>
+        <image-slot id="jay-portrait" shape="rounded" radius="24" placeholder="Photo of Jay" style="width:100%;aspect-ratio:4/5;"></image-slot>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isGallery }}" hint-placeholder-val="{{ false }}">
+    <main key="gallery" style="max-width:1280px;margin:0 auto;padding:110px 64px 140px;animation:fadeUp 0.5s ease both;">
+      <div style="font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#b5572e;font-weight:600;margin-bottom:20px;">Snapshots</div>
+      <h1 style="font-family:{{ headingFont }};font-size:52px;font-weight:500;margin:0 0 20px;letter-spacing:-0.01em;color:#2b2622;">Gallery</h1>
+      <p style="font-size:14px;color:#8a8073;margin:0 0 40px;">Drag a photo onto any tile to fill it &mdash; each drop is saved as a real file that ships with the site.</p>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;">
+        <sc-for list="{{ galleryItems }}" as="item" hint-placeholder-count="6">
+          <image-slot id="{{ item.id }}" src="{{ item.src }}" shape="rect" placeholder="{{ item.label }}" style="width:100%;aspect-ratio:1/1;"></image-slot>
+        </sc-for>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isResources }}" hint-placeholder-val="{{ false }}">
+    <main key="resources" style="max-width:820px;margin:0 auto;padding:110px 64px 140px;animation:fadeUp 0.5s ease both;">
+      <div style="font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#b5572e;font-weight:600;margin-bottom:20px;">Downloads &amp; Links</div>
+      <h1 style="font-family:{{ headingFont }};font-size:52px;font-weight:500;margin:0 0 56px;letter-spacing:-0.01em;color:#2b2622;">Resources</h1>
+
+      <div style="border-top:1px solid #ddd0ba;border-bottom:1px solid #ddd0ba;padding:32px 0;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+        <div>
+          <div style="font-family:{{ headingFont }};font-size:19px;font-weight:500;margin-bottom:6px;color:#2b2622;">Resume</div>
+          <div style="font-size:14.5px;color:#7a6f61;">PDF · updated July 2026</div>
+        </div>
+        <a href="./resume/Jay_Stroud_Resume.pdf" download="Jay_Stroud_Resume.pdf" style="background:#b5572e;color:#f6f1e8;padding:12px 24px;border-radius:2px;font-size:14.5px;font-weight:600;text-decoration:none;white-space:nowrap;">Download</a>
+      </div>
+
+      
+    </main>
+  </sc-if>
+
+  <footer style="border-top:1px solid #ddd0ba;padding:32px 64px;text-align:center;font-size:13px;color:#8a8073;">
+    © 2026 Jay Stroud
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;headingFont&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Playfair Display&quot;,&quot;options&quot;:[&quot;Fraunces&quot;,&quot;Playfair Display&quot;,&quot;Space Grotesk&quot;,&quot;Lora&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Typography&quot;}}">
+class Component extends DCLogic {
+  state = { page: 'about' };
+
+  galleryFiles = [
+    '1009171444d.jpg','20180704_211202.jpg','20180811_091150.jpg','20180827_082747.jpg','20181104_130615.jpg',
+    '20181117_154634.jpg','20181117_163924.jpg','20190803_155740.jpg','20190928_090111.jpg','20200404_155640.jpg',
+    '20200524_151515.jpg','20200525_211017.jpg','20200929_114705.jpg','20210320_120827.jpg','20210903_122615.jpg',
+    '20211215_150300.jpg','20220509_181348.jpg','20220619_195844.jpg','20230122_161527.jpg','20230220_135055.jpg',
+    '20230326_175308.jpg','20230420_115603.jpg','20230531_151248.jpg','20230615_115206.jpg','20230712_114839.jpg',
+    '20230722_195511.jpg','20230730_160803.jpg','20231101_082649.jpg','20231101_082708.jpg','20231105_132022.jpg',
+    '20231130_081628.jpg','20240427_120502.jpg','20240504_194056.jpg','20260411_212847.jpg','20260411_225737.jpg',
+    'IMG_8347.jpg','IMG_20220919_192456258.jpg','Laur2-9.jpg','PART_1436056586744_0704151913a.jpg',
+    'Resized_20190311_184901.jpeg','Resized_20210521_212844.jpeg','Resized_20220501_190416.jpeg',
+    'vmacocss05_1249887211088-1-IMG_3673.jpg','20240809_155651.jpg','20240817_184137.jpg','20251007_151529.jpg',
+    '20251122_152701.jpg','20251210_141100.jpg','20260102_130507.jpg','20260411_231558.jpg','20260421_190629.jpg',
+    'venti-views-F2PrSHG2nEk-unsplash.jpg',
+  ];
+
+  shuffledFiles = (() => {
+    const arr = this.galleryFiles.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  })();
+
+  headingFonts = {
+    'Fraunces': "'Fraunces',serif",
+    'Playfair Display': "'Playfair Display',serif",
+    'Space Grotesk': "'Space Grotesk',sans-serif",
+    'Lora': "'Lora',serif",
+  };
+
+  renderVals() {
+    const page = this.state.page;
+    const headingKey = this.props.headingFont ?? 'Fraunces';
+    const headingFont = this.headingFonts[headingKey] || this.headingFonts['Fraunces'];
+    const bodyFont = "'Inter',system-ui,sans-serif";
+    const active = '#2b2622';
+    const inactive = '#8a8073';
+    const line = '#2b2622';
+    const noLine = 'transparent';
+    return {
+      isAbout: page === 'about',
+      isGallery: page === 'gallery',
+      isResources: page === 'resources',
+      navColor: {
+        about: page === 'about' ? active : inactive,
+        gallery: page === 'gallery' ? active : inactive,
+        resources: page === 'resources' ? active : inactive,
+      },
+      navUnderline: {
+        about: page === 'about' ? line : noLine,
+        gallery: page === 'gallery' ? line : noLine,
+        resources: page === 'resources' ? line : noLine,
+      },
+      goAbout: () => this.setState({ page: 'about' }),
+      goGallery: () => this.setState({ page: 'gallery' }),
+      goResources: () => this.setState({ page: 'resources' }),
+      galleryItems: this.shuffledFiles.map((f, i) => ({
+        id: 'gal-photo-' + (i + 1),
+        label: 'Photo ' + (i + 1),
+        src: './gallery/' + f,
+      })),
+      headingFont,
+      bodyFont,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
