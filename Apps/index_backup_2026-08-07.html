@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guitar Practice Companion</title>
+<style>
+  :root{
+    --bg:#1b1f27;
+    --panel:#232833;
+    --panel-border:#3a4152;
+    --accent:#5fb3a3;
+    --accent2:#e3a857;
+    --text:#eef1f6;
+    --text-dim:#a3acbf;
+    --maj:#5fb3a3;
+    --min:#6f9ceb;
+    --dim:#e3708a;
+    --fret-line:#8892a6;
+    --nut:#eef1f6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:linear-gradient(180deg,#161a21,#1b1f27 200px);
+    color:var(--text);
+    padding:24px 16px 60px;
+  }
+  h1{
+    text-align:center;
+    margin:0 0 4px;
+    font-size:1.8em;
+    letter-spacing:0.5px;
+  }
+  .subtitle{
+    text-align:center;
+    color:var(--text-dim);
+    margin-bottom:24px;
+    font-size:0.95em;
+  }
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+  }
+  .key-select-row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .key-select-row label{
+    font-weight:600;
+    font-size:1.05em;
+  }
+  select, button{
+    font-family:inherit;
+    font-size:1em;
+    border-radius:8px;
+    border:1px solid var(--panel-border);
+    background:var(--panel);
+    color:var(--text);
+    padding:8px 14px;
+  }
+  select{
+    min-width:110px;
+    cursor:pointer;
+  }
+  select:focus, button:focus{outline:2px solid var(--accent);}
+  button{
+    cursor:pointer;
+    transition:background 0.15s, transform 0.1s;
+  }
+  button:hover{background:#2c3341;}
+  button:active{transform:scale(0.97);}
+  section.panel{
+    border:1px solid var(--panel-border);
+    border-radius:14px;
+    background:var(--panel);
+    margin-bottom:22px;
+    overflow:hidden;
+  }
+  .panel-header{
+    background:linear-gradient(90deg,#2a3040,#232833);
+    padding:12px 18px;
+    font-weight:700;
+    font-size:1.05em;
+    border-bottom:1px solid var(--panel-border);
+    letter-spacing:0.3px;
+  }
+  .panel-body{
+    padding:18px;
+  }
+  .panel-desc{
+    color:var(--text-dim);
+    font-size:0.85em;
+    margin:-6px 0 14px;
+  }
+
+  /* Diatonic chord cards */
+  .chord-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px;
+  }
+  .chord-card{
+    border:1px solid var(--panel-border);
+    border-radius:10px;
+    padding:12px;
+    text-align:center;
+    background:#1d222c;
+  }
+  .chord-card.primary-tone, .diagram-cell.primary-tone{
+    border:3px solid #ffffff;
+  }
+  .chord-card .roman{
+    font-size:0.8em;
+    color:var(--text-dim);
+  }
+  .chord-card .name{
+    font-size:1.3em;
+    font-weight:700;
+    margin:4px 0;
+  }
+  .chord-card .quality-badge{
+    display:inline-block;
+    padding:2px 10px;
+    border-radius:12px;
+    font-size:0.75em;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .quality-maj{background:rgba(95,179,163,0.2); color:var(--maj);}
+  .quality-min{background:rgba(111,156,235,0.2); color:var(--min);}
+  .quality-dim{background:rgba(227,112,138,0.2); color:var(--dim);}
+  .chord-card .degree{
+    font-size:0.8em;
+    color:var(--text-dim);
+  }
+
+  /* Scales section */
+  .scale-block{
+    margin-bottom:14px;
+  }
+  .scale-block:last-child{margin-bottom:0;}
+  .scale-block h4{
+    margin:0 0 6px;
+    font-size:0.9em;
+    color:var(--accent2);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  .note-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .note-chip{
+    background:#1d222c;
+    border:1px solid var(--panel-border);
+    border-radius:6px;
+    padding:5px 10px;
+    font-size:0.9em;
+    font-weight:600;
+  }
+  .note-chip.note-chip-root{
+    background:#ffffff;
+    color:#12181a;
+    border-color:#ffffff;
+  }
+  .arp-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:6px;
+  }
+  .arp-card{
+    background:#1d222c;
+    border:1px solid var(--panel-border);
+    border-radius:8px;
+    padding:8px 10px 10px;
+    font-size:0.85em;
+  }
+  .arp-card .arp-title{font-weight:700; margin-bottom:4px;}
+
+  .fretboard-strip{
+    margin-top:8px;
+  }
+  .fretboard-strip svg{
+    width:100%;
+    height:auto;
+    display:block;
+  }
+
+  /* Diagrams */
+  .diagram-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:14px;
+  }
+  .diagram-cell{
+    background:#1d222c;
+    border:1px solid var(--panel-border);
+    border-radius:10px;
+    padding:8px;
+    text-align:center;
+  }
+  .diagram-cell .dc-title{
+    font-weight:700;
+    font-size:0.95em;
+    margin-bottom:2px;
+  }
+  .diagram-cell .dc-sub{
+    font-size:0.72em;
+    color:var(--text-dim);
+    margin-bottom:4px;
+  }
+  /* Compact chord boxes (Open Position, Barre Chords, CAGED System): 7 columns to save vertical space */
+  .diagram-grid.compact-grid{
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+  .compact-grid .diagram-cell{
+    padding:5px;
+  }
+  .compact-grid .diagram-cell .dc-title{
+    font-size:0.72em;
+  }
+  .diagram-cell svg{width:100%;height:auto;max-width:130px;}
+
+  /* CAGED tabs */
+  .caged-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .caged-tabs button{
+    padding:7px 14px;
+    border-radius:20px;
+    font-weight:600;
+    font-size:0.85em;
+  }
+  .caged-tabs button.active{
+    background:var(--accent);
+    color:#12181a;
+    border-color:var(--accent);
+  }
+
+  /* Randomizer */
+  .randomize-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .randomize-row button{
+    background:var(--accent2);
+    color:#22180a;
+    font-weight:700;
+    border:none;
+    padding:10px 20px;
+    font-size:0.95em;
+  }
+  .randomize-row button:hover{background:#eebb70;}
+  .progression-row{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .prog-arrow{
+    align-self:center;
+    color:var(--text-dim);
+    font-size:1.3em;
+  }
+  .empty-hint{
+    color:var(--text-dim);
+    font-size:0.9em;
+    text-align:center;
+    padding:10px;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:0.75em;
+    margin-top:30px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎸 Guitar Practice Companion</h1>
+  <div class="subtitle">Pick a key and work through the theory, scales, and shapes that go with it.</div>
+
+  <div class="key-select-row">
+    <label for="keySelect">Key:</label>
+    <select id="keySelect"></select>
+  </div>
+
+  <section class="panel">
+    <div class="panel-header">1. Notes in the Key</div>
+    <div class="panel-body">
+      <div class="panel-desc">The seven diatonic chords built on each scale degree, with quality and scale-degree number.</div>
+      <div id="chordGrid" class="chord-grid"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">2. Open Position Chords</div>
+    <div class="panel-body">
+      <div class="panel-desc">Best available low-fret voicing for each chord in the key. Not every key has a true "open" (nut) shape — some show a low-position voicing instead.</div>
+      <div id="openGrid" class="diagram-grid compact-grid"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">3. Scales &amp; Arpeggios</div>
+    <div class="panel-body">
+      <div class="scale-block">
+        <h4>Major Scale</h4>
+        <div id="majorScale" class="note-row"></div>
+        <div id="majorScaleFB" class="fretboard-strip"></div>
+      </div>
+      <div class="scale-block">
+        <h4>Major Pentatonic</h4>
+        <div id="majPent" class="note-row"></div>
+        <div id="majPentFB" class="fretboard-strip"></div>
+      </div>
+      <div class="scale-block">
+        <h4>Relative Minor Pentatonic</h4>
+        <div id="minPent" class="note-row"></div>
+        <div id="minPentFB" class="fretboard-strip"></div>
+      </div>
+      <div class="scale-block">
+        <h4>Arpeggios (each diatonic chord)</h4>
+        <div id="arpGrid" class="arp-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">4. Barre Chords</div>
+    <div class="panel-body">
+      <div class="panel-desc">Each chord shown as a movable E-shape (root on the low E string) and A-shape (root on the A string) barre chord.</div>
+      <div id="barreGrid" class="diagram-grid compact-grid"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">5. CAGED System</div>
+    <div class="panel-body">
+      <div class="panel-desc">Pick a chord from the key, then see all 5 CAGED shapes (C, A, G, E, D) moved to that chord's root.</div>
+      <div id="cagedChordTabs" class="caged-tabs"></div>
+      <div id="cagedGrid" class="diagram-grid compact-grid"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">6. Random Chord Progression</div>
+    <div class="panel-body">
+      <div class="panel-desc">Generates 4 chords drawn from the key so you can practice changing between them.</div>
+      <div class="randomize-row">
+        <button id="randomizeBtn">🎲 Randomize</button>
+      </div>
+      <div id="progressionRow" class="progression-row">
+        <div class="empty-hint">Click Randomize to generate a progression.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Guitar Practice Companion — prototype</footer>
+</div>
+
+<script>
+/* ---------------- Music theory core ---------------- */
+
+const STRING_OPEN_PC = [4,9,2,7,11,4]; // low E, A, D, G, B, high e (pitch class 0=C)
+const NOTE_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+// 12 practical major keys with correctly spelled diatonic notes
+const KEYS = {
+  'C':  {root:0,  names:['C','D','E','F','G','A','B']},
+  'G':  {root:7,  names:['G','A','B','C','D','E','F#']},
+  'D':  {root:2,  names:['D','E','F#','G','A','B','C#']},
+  'A':  {root:9,  names:['A','B','C#','D','E','F#','G#']},
+  'E':  {root:4,  names:['E','F#','G#','A','B','C#','D#']},
+  'B':  {root:11, names:['B','C#','D#','E','F#','G#','A#']},
+  'F#': {root:6,  names:['F#','G#','A#','B','C#','D#','F']}, // F = E#
+  'Db': {root:1,  names:['Db','Eb','F','Gb','Ab','Bb','C']},
+  'Ab': {root:8,  names:['Ab','Bb','C','Db','Eb','F','G']},
+  'Eb': {root:3,  names:['Eb','F','G','Ab','Bb','C','D']},
+  'Bb': {root:10, names:['Bb','C','D','Eb','F','G','A']},
+  'F':  {root:5,  names:['F','G','A','Bb','C','D','E']}
+};
+const KEY_ORDER = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
+
+function pcOf(name){
+  // derive pitch class from spelled name (handles b/#)
+  const base = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+  let pc = base[name[0]];
+  if(name.includes('#')) pc += 1;
+  if(name.includes('b')) pc -= 1;
+  return ((pc%12)+12)%12;
+}
+
+const QUALITY_PATTERN = ['maj','min','min','maj','maj','min','dim'];
+const ROMAN = ['I','ii','iii','IV','V','vi','vii°'];
+const DEGREE_LABEL = ['1st (Root)','2nd','3rd','4th','5th','6th','7th'];
+const QUALITY_LABEL = {maj:'Major', min:'Minor', dim:'Diminished'};
+const INTERVALS = {maj:[0,4,7], min:[0,3,7], dim:[0,3,6]};
+
+function getDiatonicChords(keyObj){
+  const names = keyObj.names;
+  const pcs = names.map(pcOf);
+  return names.map((n,i)=>{
+    const thirdIdx = (i+2)%7, fifthIdx=(i+4)%7;
+    return {
+      index:i,
+      root:n, rootPc:pcs[i],
+      third:names[thirdIdx], thirdPc:pcs[thirdIdx],
+      fifth:names[fifthIdx], fifthPc:pcs[fifthIdx],
+      quality:QUALITY_PATTERN[i],
+      roman:ROMAN[i],
+      degree:DEGREE_LABEL[i]
+    };
+  });
+}
+
+/* ---------------- CAGED shape templates ---------------- */
+// fret relative to nut for shift=0 (i.e. the shape's own natural open-position root)
+const CAGED_TEMPLATES = {
+  C:{frets:[null,3,2,0,1,0], root:0},
+  A:{frets:[null,0,2,2,2,0], root:9},
+  G:{frets:[3,2,0,0,0,3],    root:7},
+  E:{frets:[0,2,2,1,0,0],    root:4},
+  D:{frets:[null,null,0,2,3,2], root:2}
+};
+
+// Given a shape template, target root pitch class, and quality, return fret array (or null=mute)
+function getShapeVoicing(shapeKey, targetRootPc, quality){
+  const tpl = CAGED_TEMPLATES[shapeKey];
+  const shift = ((targetRootPc - tpl.root) % 12 + 12) % 12;
+  return tpl.frets.map((f,i)=>{
+    if(f===null) return null;
+    const interval = ((STRING_OPEN_PC[i]+f - tpl.root) % 12 + 12) % 12;
+    let adj = f;
+    if(quality!=='maj' && interval===4) adj -= 1; // major 3rd -> minor 3rd
+    if(quality==='dim' && interval===7) adj -= 1; // perfect 5th -> diminished 5th
+    const final = adj + shift;
+    return final < 0 ? null : final;
+  });
+}
+
+/* ---------------- Open-position voicing solver ---------------- */
+function solveOpenChord(rootPc, quality){
+  const chordTones = INTERVALS[quality].map(i=>(rootPc+i)%12);
+  let best=null, bestScore=-Infinity;
+  const opts=[null,0,1,2,3];
+  function rec(idx, cur){
+    if(idx===6){
+      const played = cur.map((f,i)=>({f,i})).filter(x=>x.f!==null);
+      if(played.length<3) return;
+      const playedPcs = played.map(x=>(STRING_OPEN_PC[x.i]+x.f)%12);
+      if(!playedPcs.every(pc=>chordTones.includes(pc))) return; // every sounded note must be a chord tone
+      const tones = new Set(playedPcs);
+      if(!tones.has(rootPc)) return;
+      const allTones = chordTones.every(t=>tones.has(t));
+      const bassIdx = cur.findIndex(f=>f!==null);
+      const bassPc = (STRING_OPEN_PC[bassIdx]+cur[bassIdx])%12;
+      const openCount = played.filter(x=>x.f===0).length;
+      const sumFrets = played.reduce((a,x)=>a+x.f,0);
+      const frets = played.map(x=>x.f);
+      const spread = Math.max(...frets)-Math.min(...frets);
+      let score = played.length*15
+        + (allTones?100:0)
+        + (bassPc===rootPc?60:(bassPc===chordTones[2]?15:0))
+        + openCount*3
+        - sumFrets*2
+        - spread*3;
+      if(score>bestScore){bestScore=score;best=[...cur];}
+      return;
+    }
+    for(const f of opts){cur.push(f); rec(idx+1,cur); cur.pop();}
+  }
+  rec(0,[]);
+  return best;
+}
+
+/* ---------------- Fretboard SVG rendering ---------------- */
+function noteNameForPc(pc, chord){
+  if(pc===chord.rootPc) return chord.root;
+  if(pc===chord.thirdPc) return chord.third;
+  if(pc===chord.fifthPc) return chord.fifth;
+  return NOTE_SHARP[pc];
+}
+
+function buildKeyNoteMap(keyObj){
+  const map = {};
+  keyObj.names.forEach(n=>{ map[pcOf(n)] = n; });
+  return map;
+}
+
+// Full-neck (frets 0-12) strip showing every occurrence of the given pitch classes across all 6 strings
+function renderFretboardStripSVG(pcSet, rootPc, noteMap){
+  const numFrets=12;
+  const w=560, h=96, leftPad=26, rightPad=10, topPad=14, botPad=22;
+  const gridW=w-leftPad-rightPad, gridH=h-topPad-botPad;
+  const fretX = f => leftPad + (gridW/numFrets)*f;
+  // string index 0 = low E ... 5 = high e, but drawn high-e-on-top (standard fretboard-diagram convention)
+  const stringY = s => topPad + (gridH/5)*(5-s);
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // nut
+  svg += `<rect x="${fretX(0)-2}" y="${topPad-4}" width="4" height="${gridH+8}" fill="var(--nut)"/>`;
+  // fret lines
+  for(let f=1; f<=numFrets; f++){
+    svg += `<line x1="${fretX(f)}" y1="${topPad-4}" x2="${fretX(f)}" y2="${topPad+gridH+4}" stroke="var(--fret-line)" stroke-width="1"/>`;
+  }
+  // inlay markers
+  const midY = topPad+gridH/2;
+  [3,5,7,9].forEach(f=>{
+    const x=(fretX(f)+fretX(f-1))/2;
+    svg += `<circle cx="${x}" cy="${midY}" r="2.5" fill="#3a4152"/>`;
+  });
+  const x12=(fretX(12)+fretX(11))/2;
+  svg += `<circle cx="${x12}" cy="${midY-8}" r="2.5" fill="#3a4152"/>`;
+  svg += `<circle cx="${x12}" cy="${midY+8}" r="2.5" fill="#3a4152"/>`;
+  // strings
+  for(let s=0; s<6; s++){
+    svg += `<line x1="${fretX(0)}" y1="${stringY(s)}" x2="${fretX(numFrets)}" y2="${stringY(s)}" stroke="var(--fret-line)" stroke-width="1.2"/>`;
+  }
+  // fret number labels
+  [3,5,7,9,12].forEach(f=>{
+    const x=(fretX(f)+fretX(f-1))/2;
+    svg += `<text x="${x}" y="${h-6}" font-size="7.5" fill="var(--text-dim)" text-anchor="middle">${f}</text>`;
+  });
+  // open-string reference marker: always shown for every string, even when the open note isn't in this scale
+  for(let s=0; s<6; s++){
+    const pc = STRING_OPEN_PC[s];
+    const x = fretX(0)-10;
+    const label = noteMap[pc] || NOTE_SHARP[pc];
+    if(pcSet.includes(pc)) continue; // will be drawn as a full scale-tone dot below
+    svg += `<circle cx="${x}" cy="${stringY(s)}" r="5" fill="none" stroke="var(--text-dim)" stroke-width="1"/>`;
+    svg += `<text x="${x}" y="${stringY(s)+2.2}" font-size="5.5" fill="var(--text-dim)" text-anchor="middle" font-weight="700">${label}</text>`;
+  }
+  // note dots
+  for(let s=0; s<6; s++){
+    for(let f=0; f<=numFrets; f++){
+      const pc = (STRING_OPEN_PC[s]+f)%12;
+      if(!pcSet.includes(pc)) continue;
+      const x = f===0 ? fretX(0)-10 : (fretX(f)+fretX(f-1))/2;
+      const isRoot = pc===rootPc;
+      const r = isRoot?7:5.5;
+      const label = noteMap[pc] || NOTE_SHARP[pc];
+      svg += `<circle cx="${x}" cy="${stringY(s)}" r="${r}" fill="${isRoot?'var(--accent2)':'var(--min)'}"/>`;
+      svg += `<text x="${x}" y="${stringY(s)+2.4}" font-size="${isRoot?6.5:6}" fill="#12181a" text-anchor="middle" font-weight="700">${label}</text>`;
+    }
+  }
+  svg += `</svg>`;
+  return svg;
+}
+
+function renderChordSVG(frets, chord, barre){
+  const played = frets.map((f,i)=>({f,i})).filter(x=>x.f!==null);
+  const positiveFrets = played.filter(x=>x.f>0).map(x=>x.f);
+  let startFret = 0;
+  const maxFret = played.length? Math.max(...played.map(x=>x.f)) : 0;
+  if(maxFret>4 && positiveFrets.length){
+    startFret = Math.min(...positiveFrets);
+  }
+  const numFrets = 4;
+  const w=138, h=155, leftPad=26, topPad=30, rightPad=12, botPad=14;
+  const gridW=w-leftPad-rightPad, gridH=h-topPad-botPad;
+  const stringX = i => leftPad + (gridW/5)*i;
+  const fretY = f => topPad + (gridH/numFrets)*f;
+  // Maps an absolute fret number to its 1-indexed row in the visible grid.
+  // When the nut is shown (startFret 0), row 1 sits between the nut and fret-wire 1, so row === fret.
+  // When the grid is shifted up the neck, the top line itself represents fret `startFret`, so row 1 === startFret.
+  const cellForFret = f => startFret===0 ? f : (f - startFret + 1);
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // position label (shifted further left of the grid so it isn't covered by a low-E dot)
+  if(startFret>0){
+    svg += `<text x="${leftPad-19}" y="${topPad+ (gridH/numFrets)*0.5+4}" font-size="11.5" fill="#ffffff" text-anchor="middle">${startFret}</text>`;
+  }
+
+  // nut or top line
+  if(startFret===0){
+    svg += `<rect x="${stringX(0)}" y="${topPad-3}" width="${stringX(5)-stringX(0)}" height="4" fill="var(--nut)"/>`;
+  } else {
+    svg += `<line x1="${stringX(0)}" y1="${topPad}" x2="${stringX(5)}" y2="${topPad}" stroke="var(--fret-line)" stroke-width="1"/>`;
+  }
+  // fret lines
+  for(let fr=1; fr<=numFrets; fr++){
+    svg += `<line x1="${stringX(0)}" y1="${fretY(fr)}" x2="${stringX(5)}" y2="${fretY(fr)}" stroke="var(--fret-line)" stroke-width="1"/>`;
+  }
+  // strings
+  for(let s=0; s<6; s++){
+    svg += `<line x1="${stringX(s)}" y1="${topPad}" x2="${stringX(s)}" y2="${fretY(numFrets)}" stroke="var(--fret-line)" stroke-width="1.3"/>`;
+  }
+  // barre bar: drawn only when the caller tells us this voicing genuinely requires an index-finger barre
+  if(barre){
+    const relFret = cellForFret(barre.fret);
+    const cy = topPad + (gridH/numFrets)*(relFret-0.5);
+    const x1 = stringX(barre.from);
+    const x2 = stringX(barre.to);
+    svg += `<line x1="${x1}" y1="${cy}" x2="${x2}" y2="${cy}" stroke="var(--accent2)" stroke-width="11" stroke-linecap="round" opacity="0.5"/>`;
+  }
+  // open/mute markers + dots
+  for(let s=0; s<6; s++){
+    const f = frets[s];
+    if(f===null){
+      svg += `<text x="${stringX(s)}" y="${topPad-8}" font-size="10" fill="var(--dim)" text-anchor="middle" font-weight="700">×</text>`;
+    } else if(f===0){
+      svg += `<circle cx="${stringX(s)}" cy="${topPad-9}" r="3.5" fill="none" stroke="var(--maj)" stroke-width="1.5"/>`;
+    } else {
+      const relFret = cellForFret(f);
+      const cy = topPad + (gridH/numFrets)*(relFret-0.5);
+      const pc = (STRING_OPEN_PC[s]+f)%12;
+      const label = noteNameForPc(pc, chord);
+      const isRoot = pc===chord.rootPc;
+      svg += `<circle cx="${stringX(s)}" cy="${cy}" r="8.5" fill="${isRoot?'var(--accent2)':'var(--min)'}"/>`;
+      svg += `<text x="${stringX(s)}" y="${cy+3}" font-size="7.5" fill="#12181a" text-anchor="middle" font-weight="700">${label}</text>`;
+    }
+  }
+  svg += `</svg>`;
+  return svg;
+}
+
+// Only E-shape and A-shape voicings use a genuine single-finger index barre when moved off the nut.
+function barreForShape(shape, frets){
+  if((shape!=='E' && shape!=='A')) return null;
+  const anchorIdx = shape==='E'?0:1;
+  const rootFret = frets[anchorIdx];
+  if(!rootFret || rootFret<=0) return null;
+  let lastIdx = anchorIdx;
+  for(let i=5;i>=0;i--){ if(frets[i]!==null){lastIdx=i;break;} }
+  return {fret:rootFret, from:anchorIdx, to:lastIdx};
+}
+
+/* ---------------- Rendering the page ---------------- */
+let currentKey = 'C';
+let currentChords = [];
+let cagedSelectedIdx = 0;
+
+function populateKeySelect(){
+  const sel = document.getElementById('keySelect');
+  KEY_ORDER.forEach(k=>{
+    const opt = document.createElement('option');
+    opt.value=k; opt.textContent=k;
+    sel.appendChild(opt);
+  });
+  sel.value = currentKey;
+  sel.addEventListener('change', ()=>{
+    currentKey = sel.value;
+    cagedSelectedIdx = 0;
+    renderAll();
+  });
+}
+
+function renderChordGrid(){
+  const grid = document.getElementById('chordGrid');
+  grid.innerHTML='';
+  currentChords.forEach(c=>{
+    const div = document.createElement('div');
+    const isPrimaryTone = c.index===0 || c.index===2 || c.index===4; // 1st, 3rd, 5th
+    div.className = 'chord-card' + (isPrimaryTone? ' primary-tone' : '');
+    div.innerHTML = `
+      <div class="roman">${c.roman}</div>
+      <div class="name">${c.root}${c.quality==='min'?'m':(c.quality==='dim'?'°':'')}</div>
+      <div class="quality-badge quality-${c.quality}">${QUALITY_LABEL[c.quality]}</div>
+      <div class="degree">${c.degree}</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function renderScales(){
+  const keyObj = KEYS[currentKey];
+  const names = keyObj.names;
+  const noteMap = buildKeyNoteMap(keyObj);
+  const chip = (n, isRoot) => `<div class="note-chip${isRoot?' note-chip-root':''}">${n}</div>`;
+
+  document.getElementById('majorScale').innerHTML = names.map(n=>chip(n, pcOf(n)===keyObj.root)).join('');
+  const majorScalePcs = names.map(pcOf);
+  document.getElementById('majorScaleFB').innerHTML = renderFretboardStripSVG(majorScalePcs, keyObj.root, noteMap);
+
+  const majPentIdx=[0,1,2,4,5];
+  document.getElementById('majPent').innerHTML = majPentIdx.map(i=>chip(names[i], pcOf(names[i])===keyObj.root)).join('');
+  const majPentPcs = majPentIdx.map(i=>pcOf(names[i]));
+  document.getElementById('majPentFB').innerHTML = renderFretboardStripSVG(majPentPcs, keyObj.root, noteMap);
+
+  const minPentIdx=[5,0,1,2,4];
+  document.getElementById('minPent').innerHTML = minPentIdx.map(i=>chip(names[i], i===5)+ (i===5?' <span style="color:var(--text-dim);font-size:0.75em;align-self:center;">('+names[5]+' minor)</span>':'')).join('');
+  const minPentPcs = minPentIdx.map(i=>pcOf(names[i]));
+  document.getElementById('minPentFB').innerHTML = renderFretboardStripSVG(minPentPcs, pcOf(names[5]), noteMap);
+
+  const arpGrid = document.getElementById('arpGrid');
+  arpGrid.innerHTML = currentChords.map(c=>`
+    <div class="arp-card">
+      <div class="arp-title">${c.roman} — ${c.root}${c.quality==='min'?'m':(c.quality==='dim'?'°':'')}</div>
+      <div>${c.root} – ${c.third} – ${c.fifth}</div>
+      <div class="fretboard-strip">${renderFretboardStripSVG([c.rootPc,c.thirdPc,c.fifthPc], c.rootPc, noteMap)}</div>
+    </div>
+  `).join('');
+}
+
+function renderOpenChords(){
+  const grid = document.getElementById('openGrid');
+  grid.innerHTML='';
+  currentChords.forEach(c=>{
+    const frets = solveOpenChord(c.rootPc, c.quality);
+    const isPrimaryTone = c.index===0 || c.index===2 || c.index===4; // 1st, 3rd, 5th
+    const cell = document.createElement('div');
+    cell.className = 'diagram-cell' + (isPrimaryTone? ' primary-tone' : '');
+    const label = c.root+(c.quality==='min'?'m':(c.quality==='dim'?'°':''));
+    if(frets){
+      cell.innerHTML = `<div class="dc-title">${label} - ${c.roman}</div>${renderChordSVG(frets,c)}`;
+    } else {
+      cell.innerHTML = `<div class="dc-title">${label} - ${c.roman}</div><div style="padding:20px 0;color:var(--text-dim);font-size:0.8em;">No practical open voicing — try the barre or CAGED sections.</div>`;
+    }
+    grid.appendChild(cell);
+  });
+}
+
+function renderBarreChords(){
+  const grid = document.getElementById('barreGrid');
+  grid.innerHTML='';
+  currentChords.forEach(c=>{
+    const label = c.root+(c.quality==='min'?'m':(c.quality==='dim'?'°':''));
+    const isPrimaryTone = c.index===0 || c.index===2 || c.index===4; // 1st, 3rd, 5th
+    const positions = ['E','A'].map(shape=>{
+      const frets = getShapeVoicing(shape, c.rootPc, c.quality);
+      const rootFret = shape==='E'? frets[0] : frets[1];
+      return {shape, frets, rootFret};
+    }).sort((a,b)=>a.rootFret-b.rootFret); // lowest fret (closest to the nut) first
+    positions.forEach(({shape,frets,rootFret})=>{
+      const barre = barreForShape(shape, frets);
+      const cell = document.createElement('div');
+      cell.className = 'diagram-cell' + (isPrimaryTone? ' primary-tone' : '');
+      const posLabel = rootFret===0? 'Open Position' : `${shape}-shape · Root fret ${rootFret}`;
+      cell.innerHTML = `<div class="dc-title">${label} - ${c.roman}</div><div class="dc-sub">${posLabel}</div>${renderChordSVG(frets,c,barre)}`;
+      grid.appendChild(cell);
+    });
+  });
+}
+
+function renderCagedTabs(){
+  const tabs = document.getElementById('cagedChordTabs');
+  tabs.innerHTML='';
+  currentChords.forEach((c,i)=>{
+    const btn = document.createElement('button');
+    const label = c.root+(c.quality==='min'?'m':(c.quality==='dim'?'°':''));
+    btn.textContent = `${c.roman} ${label}`;
+    if(i===cagedSelectedIdx) btn.classList.add('active');
+    btn.addEventListener('click', ()=>{ cagedSelectedIdx=i; renderCagedTabs(); renderCagedGrid(); });
+    tabs.appendChild(btn);
+  });
+}
+
+function renderCagedGrid(){
+  const grid = document.getElementById('cagedGrid');
+  grid.innerHTML='';
+  const c = currentChords[cagedSelectedIdx];
+  ['C','A','G','E','D'].forEach(shape=>{
+    const frets = getShapeVoicing(shape, c.rootPc, c.quality);
+    const playedFrets = frets.filter(f=>f!==null);
+    if(playedFrets.filter(f=>f>0).length===0 && playedFrets.length<2) return; // skip degenerate
+    const barre = barreForShape(shape, frets);
+    const cell = document.createElement('div');
+    cell.className='diagram-cell';
+    const minPositive = playedFrets.filter(f=>f>0);
+    const posText = minPositive.length? `${Math.min(...minPositive)}fr` : 'Open';
+    cell.innerHTML = `<div class="dc-title">${shape}-shape</div><div class="dc-sub">${posText}</div>${renderChordSVG(frets,c,barre)}`;
+    grid.appendChild(cell);
+  });
+}
+
+function renderProgression(chords){
+  const row = document.getElementById('progressionRow');
+  if(!chords){
+    row.innerHTML = '<div class="empty-hint">Click Randomize to generate a progression.</div>';
+    return;
+  }
+  row.innerHTML = chords.map((c,i)=>{
+    const openFrets = solveOpenChord(c.rootPc, c.quality);
+    const frets = openFrets || getShapeVoicing('E', c.rootPc, c.quality);
+    const barre = openFrets ? null : barreForShape('E', frets);
+    const label = c.root+(c.quality==='min'?'m':(c.quality==='dim'?'°':''));
+    const cell = `<div class="diagram-cell" style="min-width:120px;"><div class="dc-title">${label}</div><div class="dc-sub">${c.roman}</div>${renderChordSVG(frets,c,barre)}</div>`;
+    return cell + (i<chords.length-1? '<div class="prog-arrow">→</div>' : '');
+  }).join('');
+}
+
+function renderAll(){
+  currentChords = getDiatonicChords(KEYS[currentKey]);
+  renderChordGrid();
+  renderScales();
+  renderOpenChords();
+  renderBarreChords();
+  renderCagedTabs();
+  renderCagedGrid();
+  renderProgression(null);
+}
+
+document.getElementById('randomizeBtn').addEventListener('click', ()=>{
+  const counts = {}; // cap each chord at 2 appearances so we never get 3-or-4-of-a-kind
+  const picks = [];
+  for(let i=0;i<4;i++){
+    let idx, guard=0;
+    do {
+      idx = Math.floor(Math.random()*currentChords.length);
+      guard++;
+    } while((counts[idx]||0)>=2 && guard<200);
+    counts[idx] = (counts[idx]||0)+1;
+    picks.push(currentChords[idx]);
+  }
+  renderProgression(picks);
+});
+
+populateKeySelect();
+renderAll();
+</script>
+</body>
+</html>
